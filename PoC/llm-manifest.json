@@ -2,28 +2,26 @@
   "llmProtocolVersion": "1.0",
   "graphQLEndpoint": "/graphql",
   "authentication": {
-    "type": "None"
+    "type": "None",
+    "tokenUrl": null,
+    "scopes": []
   },
   "schema": {
     "type": "GraphQL",
     "introspection": true,
-    "schemaSDL": "type Query {\n  product(id: ID!): Product\n  products: [Product]\n}\n\ntype Mutation {\n  submitOrder(orderInput: OrderInput!): OrderConfirmation\n}\n\ntype Product {\n  id: ID!\n  name: String!\n  price: Float!\n  availability: Int!\n}\n\ninput OrderInput {\n  productId: ID!\n  quantity: Int!\n  shippingAddress: AddressInput!\n}\n\ninput AddressInput {\n  street: String!\n  city: String!\n  postalCode: String!\n  country: String!\n}\n\n type OrderConfirmation {\n  orderId: ID!\n  estimatedDelivery: String!\n}"
+    "schemaSDL": "\n  type Query {\n    product(id: ID!): Product\n    products: [Product]\n  }\n\n  type Mutation {\n    submitOrder(productId: ID!, quantity: Int!, shippingAddress: AddressInput!): OrderConfirmation\n  }\n\n  type Product {\n    id: ID!\n    name: String!\n    price: Float!\n    availability: Int!\n  }\n\n  input AddressInput {\n    street: String!\n    city: String!\n    postalCode: String!\n    country: String!\n  }\n\n  type OrderConfirmation {\n    orderId: ID!\n    estimatedDelivery: String!\n  }\n"
   },
   "examples": {
     "queries": [
       {
         "description": "Get product details",
-        "query": "query {\n  product(id: \"101\") {\n    name\n    price\n    availability\n  }\n}"
-      },
-      {
-        "description": "List all products",
-        "query": "query {\n  products {\n    id\n    name\n    price\n    availability\n  }\n}"
+        "query": "query {\n  product(id: \"1\") {\n    name\n    price\n    availability\n  }\n}"
       }
     ],
     "mutations": [
       {
         "description": "Submit an order",
-        "mutation": "mutation {\n  submitOrder(orderInput: {\n    productId: \"102\",\n    quantity: 2,\n    shippingAddress: {\n      street: \"123 Main St\",\n      city: \"Anytown\",\n      postalCode: \"12345\",\n      country: \"USA\"\n    }\n  }) {\n    orderId\n    estimatedDelivery\n  }\n}"
+        "mutation": "mutation {\n  submitOrder(\n    productId: \"1\", \n    quantity: 2, \n    shippingAddress: {\n      street: \"123 Main St\",\n      city: \"Anytown\",\n      postalCode: \"12345\",\n      country: \"USA\"\n    }\n  ) {\n    orderId\n    estimatedDelivery\n  }\n}"
       }
     ]
   }

@@ -2,25 +2,130 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>HiLLM PoC</title>
-
+    <!-- HiLLM Protocol Meta Tags -->
     <meta name="llm-protocol-version" content="1.0" />
     <meta name="llm-manifest" content="/llm-manifest.json" />
+    <title>HiLLM Store Demo</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+      }
+      .product {
+        border: 1px solid #ddd;
+        padding: 10px;
+        margin: 10px 0;
+      }
+      label {
+        display: inline-block;
+        width: 100px;
+      }
+      input {
+        margin-bottom: 10px;
+      }
+    </style>
   </head>
-  <body
-    style="
-      display: flex;
-      justify-items: center;
-      align-items: center;
-      flex-direction: column;
-      font-family: sans-serif;
-      margin-top: 15%;
-    "
-  >
-    <h1>HiLLM Protocol - Proof of Concept</h1>
-    <p style="width: 60vw; text-align: center">
-      This page implements an llm-manifest.json that describes how an LLM can
-      interact with the GraphQL endpoint at <code>/graphql</code>.
-    </p>
+  <body>
+    <h1>HiLLM Store Demo</h1>
+    <div id="products">
+      <h2>Available Products</h2>
+      <!-- Products will be loaded here -->
+    </div>
+    <hr />
+    <h2>Submit an Order</h2>
+    <form id="orderForm">
+      <label for="productId">Product ID:</label>
+      <input type="text" id="productId" name="productId" required /><br />
+      <label for="quantity">Quantity:</label>
+      <input type="number" id="quantity" name="quantity" required /><br />
+      <fieldset>
+        <legend>Shipping Address</legend>
+        <label for="street">Street:</label>
+        <input type="text" id="street" name="street" required /><br />
+        <label for="city">City:</label>
+        <input type="text" id="city" name="city" required /><br />
+        <label for="postalCode">Postal Code:</label>
+        <input type="text" id="postalCode" name="postalCode" required /><br />
+        <label for="country">Country:</label>
+        <input type="text" id="country" name="country" required /><br />
+      </fieldset>
+      <button type="submit">Submit Order</button>
+    </form>
+    <div id="orderResult"></div>
+
+    <script>
+      // Fetch products from the GraphQL endpoint and display them
+      fetch("/graphql", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          query: "{ products { id name price availability } }",
+        }),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          const productsDiv = document.getElementById("products");
+          data.data.products.forEach((product) => {
+            const div = document.createElement("div");
+            div.className = "product";
+            div.innerHTML = `<strong>ID:</strong> ${product.id} <br>
+                         <strong>Name:</strong> ${product.name} <br>
+                         <strong>Price:</strong> $${product.price} <br>
+                         <strong>Availability:</strong> ${product.availability}`;
+            productsDiv.appendChild(div);
+          });
+        })
+        .catch((err) => console.error("Error fetching products:", err));
+
+      // Handle order submission
+      document
+        .getElementById("orderForm")
+        .addEventListener("submit", function (e) {
+          e.preventDefault();
+          const productId = document.getElementById("productId").value;
+          const quantity = parseInt(document.getElementById("quantity").value);
+          const street = document.getElementById("street").value;
+          const city = document.getElementById("city").value;
+          const postalCode = document.getElementById("postalCode").value;
+          const country = document.getElementById("country").value;
+
+          const mutation = `
+        mutation {
+          submitOrder(
+            productId: "${productId}", 
+            quantity: ${quantity}, 
+            shippingAddress: {
+              street: "${street}",
+              city: "${city}",
+              postalCode: "${postalCode}",
+              country: "${country}"
+            }
+          ) {
+            orderId
+            estimatedDelivery
+          }
+        }
+      `;
+
+          fetch("/graphql", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ query: mutation }),
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              const result = data.data.submitOrder;
+              document.getElementById("orderResult").innerText =
+                "Order submitted successfully! Order ID: " +
+                result.orderId +
+                ". Estimated Delivery: " +
+                result.estimatedDelivery;
+            })
+            .catch((err) => {
+              document.getElementById("orderResult").innerText =
+                "Error submitting order";
+            });
+        });
+    </script>
   </body>
 </html>
