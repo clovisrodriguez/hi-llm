@@ -1,18 +1,5 @@
-# Use the official Node.js LTS image
-FROM node:18
+# Use Koyeb’s docker-compose base image
+FROM koyeb/docker-compose
 
-# Create app directory
-WORKDIR /app
-
-# Install app dependencies
-COPY package*.json ./
-RUN npm install
-
-# Bundle app source
-COPY . .
-
-# Expose the app port
-EXPOSE 3000
-
-# Start the app
-CMD ["node", "index.js"]
+# Copy your entire project (including docker-compose.yml) into /app
+COPY . /app

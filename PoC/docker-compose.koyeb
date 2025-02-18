@@ -1,0 +1,17 @@
+version: "3.9"
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "${PORT}:3000"
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/hillm-demo
+    depends_on:
+      - mongo
+
+  mongo:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
